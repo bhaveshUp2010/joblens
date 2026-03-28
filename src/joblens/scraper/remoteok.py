@@ -2,15 +2,29 @@ import requests
 from base import JobScraper
 
 
-class RemoteOKScraper(JobScraper):
+class RemoteOkScraper(JobScraper):
 
     def get_page(self):
-        res = requests.get(self.base_url)
-        res = res.json()[1:]
-        return res
+        header = {"User-Agent": "Mozilla/5.0"}
+        res = requests.get(self.base_url, headers=header)
+
+        return res.json()[1:]
 
     def get_job(self, raw_data):
-        jobs = []
+        postings = []
+
         for job in raw_data:
-            jobs.append(job)
-        return jobs
+            post = {
+                "id": job["id"],
+                "title": job.get("position", ""),
+                "company": job.get("company", ""),
+                "location": job.get("location") or "Remote",
+                "description": job.get("description", ""),
+                "source": "remoteok",
+                "salary_min": job.get("salary_min"),
+                "salary_max": job.get("salary_max"),
+                "is_remote": "yes",
+            }
+            postings.append(post)
+
+        return postings
